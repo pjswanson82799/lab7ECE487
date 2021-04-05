@@ -87,6 +87,11 @@ void mmBlockANDcmSetNum(int mainMemAddress[], int mmblk[], int cmSetArray[], int
 	}
 }
 
+void first_table(int main_memory_addresses[], int mmblkNum[], int size) {
+	std::cout << "Main Memory Address\t MM Blk#\t Cm Set#\t Cm Blk#\t hit/miss" << std::endl;
+	std::cout << "__________________________________________________________________________________" << std::endl;
+}
+
 int main() {
 	//variables used for exit status prompt
   char user_loop_exit;
@@ -130,6 +135,8 @@ int main() {
     for (int i =0; i < sizeof(mainMemBlockNUM)/sizeof(mainMemBlockNUM[0]); i++){
 			std::cout <<  memory_locations[i]<< '\t' << mainMemBlockNUM[i] << '\t' << CacheMemSetNUM[i] << std::endl;
 		}
+
+    first_table(memory_locations, mainMemBlockNUM, size);
 
     std::cout << "\nContinue? (y = yes, n = no): ";
     std::cin >> user_loop_exit;
