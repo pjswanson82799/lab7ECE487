@@ -51,7 +51,7 @@ void values_required(int sizeofMainMem, int sizeofCache, int BlockSize, int degr
 //The basic format of the input file is known and given to us: a single number (called M) on the first line followed by a carriage return and a two column, M row  array of data beneath it
 //This function reads that first number from the file and nothing else.  I need this first value because i initialize arrays to the size of this number later in the main program
 int mem_references_from_file(std::string input_file){
-  int number_of_references;
+  int number_of_references;                                        //initialize an int to hold the converted int from string
 	std::string line;                                                //Creating a string that will pull the first line.  Later will convert to integer
 	std::ifstream myfile(input_file.c_str());                        //Now max, you may be wondering why do I need this .c_str() suffix.  Good question.  In C++, you can use strings instead of character arrays
 	if (myfile.good()) {                                             //in C++ you go std::string blahblah instead of char blahblah[25] for example.  Some C++ functions have their roots in C and so to convert from a C++ string to a C character array, you use the suffix
@@ -60,22 +60,22 @@ int mem_references_from_file(std::string input_file){
 		myfile.close();                                               //Don't exactly need this as fstream will close file automatically but its habit at this point
 	}
 	else {
-		std::cerr << "Can't open file" << std::endl;
+		std::cerr << "Can't open file" << std::endl;                  //error function might remove later as we can assume that all input will be valid, alledgedly
 	}
-  return number_of_references;
+  return number_of_references;                                    //return the number from the first line of the file
 }
 
 void meat_of_input_file(std::string input_file, char word_array[], int value_array[]){
   std::string line1;
-  std::string word;
+  std::string word;                                               //at this point, I realize that this is probably not the best way to parse an input stream.  But it worked.  Created two strings, one for the R/W colum and another for the memory location
   std::string value;
-	int i;
-  std::ifstream stream(input_file.c_str());
-  stream.ignore(1, '\n');                           //to ignore the first line
-  while(getline(stream, line1)){
-    stream >> word >> value;
-		word_array[i] = word[0];
-		value_array[i] = stoi (value);
+	int i;                                                         //iterator to populate the arrays
+  std::ifstream stream(input_file.c_str());                       //open up file for reading again
+  stream.ignore(1, '\n');                                         //to ignore the first line because we pulled that number from the previous function
+  while(getline(stream, line1)){                                  //loop until the end of the file
+    stream >> word >> value;                                      //read into the stream the two values, seperated by a space
+		word_array[i] = word[0];                                      //because the first value in each row is a letter, to get a char from the string i set ith value to the first element of the string.
+		value_array[i] = stoi (value);                                //string to integer for the memory location.
 		i++;
   }
 }
