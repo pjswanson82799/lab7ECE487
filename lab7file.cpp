@@ -8,6 +8,7 @@
 
 //This function passes by reference the input parameters of this program.  Function queries user for size of main memory, size of cache, block size, n-degree of associativity
 //replacement policy, and the name of the file.  Keep in mind that the name of file that the user inputs will always include the .txt ending
+//There is nothing too crazy in this function, pretty standard I/O stuff.  I decided to use a string for the name of the input file 
 void user_input( int &mainMem, int &cache, int &BlockSize, int &associativity, char &L_orF, std::string &inputFile) {
 	std::cout << "Enter the size of main memory in bytes: ";
 	std::cin >> mainMem;
