@@ -8,7 +8,7 @@
 
 //This function passes by reference the input parameters of this program.  Function queries user for size of main memory, size of cache, block size, n-degree of associativity
 //replacement policy, and the name of the file.  Keep in mind that the name of file that the user inputs will always include the .txt ending
-//There is nothing too crazy in this function, pretty standard I/O stuff.  I decided to use a string for the name of the input file 
+//There is nothing too crazy in this function, pretty standard I/O stuff.  I decided to use a string for the name of the input file
 void user_input( int &mainMem, int &cache, int &BlockSize, int &associativity, char &L_orF, std::string &inputFile) {
 	std::cout << "Enter the size of main memory in bytes: ";
 	std::cin >> mainMem;
@@ -24,10 +24,13 @@ void user_input( int &mainMem, int &cache, int &BlockSize, int &associativity, c
 	std::cin >> inputFile;
 }
 
+//This function takes the values that had data read into them in the user_input function and performs various calculations with them.  Reading in the size of the various memory
+//main memory, cache, block, and degree of associiativty, the number of addresslines, number of offset bits, number of index bits, number of tag bits, and number of total bits total bits needed
+//are calculated.
 void values_required(int sizeofMainMem, int sizeofCache, int BlockSize, int degreeAssociative, int &addressLinesNeeded, int &bitsforOffset, int &bitsforINDEX, int &bitsForTag, int &totalBits){
   int blocksPerSet = 0;
   int numSets = 0;
-  addressLinesNeeded = (int) log2(sizeofMainMem);
+  addressLinesNeeded = (int) log2(sizeofMainMem);           //basic formula given in class
   bitsforOffset = (int) log2(BlockSize);
   blocksPerSet = (BlockSize * degreeAssociative);
   //std::cout << blocksPerSet << std::endl;
