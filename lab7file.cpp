@@ -2,9 +2,22 @@
 #include <math.h>       /* log2 */
 #include <string>       //for strings
 #include <fstream>    //for reading files
+#include <iomanip>			//table manipulation
 
 #define DIRTYBIT  1
 #define VALIDBIT  1
+
+const char separator    = ' ';
+const int nameWidth     = 6;
+const int numWidth      = 8;
+
+//A template is a special type of function in C++ that allows a user to operate with generic data types
+//at compile time, they are expanmded like macros
+//this template is used to format the two output tables
+//Despit all of its benefits, I find C++ very difficult to manipulate termainl output with.  This helps
+template<typename T> void printElement(T t, const int& width){
+  std::cout << std::left << std::setw(width) << std::setfill(separator) << t;
+}
 
 //This function passes by reference the input parameters of this program.  Function queries user for size of main memory, size of cache, block size, n-degree of associativity
 //replacement policy, and the name of the file.  Keep in mind that the name of file that the user inputs will always include the .txt ending
@@ -105,6 +118,7 @@ void second_table(int numofCacheblks){
 		std::cout << i << std::endl;
 	}
 }
+
 
 int main() {
 	//variables used for exit status prompt
