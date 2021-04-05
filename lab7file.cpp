@@ -48,14 +48,16 @@ void values_required(int sizeofMainMem, int sizeofCache, int BlockSize, int degr
   std::cout << "Total cache size required = " << totalBits << std::endl;
 }
 
+//The basic format of the input file is known and given to us: a single number (called M) on the first line followed by a carriage return and a two column, M row  array of data beneath it
+//This function reads that first number from the file and nothing else.  I need this first value because i initialize arrays to the size of this number later in the main program
 int mem_references_from_file(std::string input_file){
   int number_of_references;
-	std::string line;
-	std::ifstream myfile(input_file.c_str());
-	if (myfile.good()) {
-    std::getline(myfile, line);
-    number_of_references = std::stoi (line);
-		myfile.close();
+	std::string line;                                                //Creating a string that will pull the first line.  Later will convert to integer
+	std::ifstream myfile(input_file.c_str());                        //Now max, you may be wondering why do I need this .c_str() suffix.  Good question.  In C++, you can use strings instead of character arrays
+	if (myfile.good()) {                                             //in C++ you go std::string blahblah instead of char blahblah[25] for example.  Some C++ functions have their roots in C and so to convert from a C++ string to a C character array, you use the suffix
+    std::getline(myfile, line);                                   //grabs the first line
+    number_of_references = std::stoi (line);                      //converts string to an integer
+		myfile.close();                                               //Don't exactly need this as fstream will close file automatically but its habit at this point
 	}
 	else {
 		std::cerr << "Can't open file" << std::endl;
