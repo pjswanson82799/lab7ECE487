@@ -65,6 +65,7 @@ int mem_references_from_file(std::string input_file){
   return number_of_references;                                    //return the number from the first line of the file
 }
 
+//This function gathers the data from the file and puts it into two arrays, one a char array that holds whether the memoryu location is a read or a write and another to hold the int value of the memory location
 void meat_of_input_file(std::string input_file, char word_array[], int value_array[]){
   std::string line1;
   std::string word;                                               //at this point, I realize that this is probably not the best way to parse an input stream.  But it worked.  Created two strings, one for the R/W colum and another for the memory location
@@ -119,6 +120,7 @@ int main() {
     char replacementPolicy = 'k';
     std::string inputFileName = "";
 
+		//variables that will hold data passed to it by reference
     int tot_address_lines_needed = 0;
     int bitsneededForOffset = 0;
     int bits_for_index = 0;
