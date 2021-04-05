@@ -80,16 +80,29 @@ void meat_of_input_file(std::string input_file, char word_array[], int value_arr
   }
 }
 
+//This functyion populates the mmblk array and set array, performing calculations on elements of the arrays.  The first parameter is the array of main memory addresses, gleaned from the input file
+//The second and third parameters are empty arrays already initialized using the number of memory locations from the first line in the input file
+//the fourth input parameter is from user input, the size of the block
+//The fourth paramter is the size of the array, gathered from the mainfunction.  More detail as to why I had to input another parameter instead of defining the size of the array inside the functions
+//can be found inside of main, but basically, functions outside of main can't use sizeof() function in C++
 void mmBlockANDcmSetNum(int mainMemAddress[], int mmblk[], int cmSetArray[], int block_size, int sizeOfArray){
-	for (int i =0; i < sizeOfArray; i++){
-		mmblk[i] = (mainMemAddress[i]/block_size);
-    cmSetArray[i] = (mmblk[i] % block_size);
+	for (int i =0; i < sizeOfArray; i++){																					//loop through the entire array
+		mmblk[i] = (mainMemAddress[i]/block_size);																	//from the main memory array, the mmblk array is populated by dividing each element by the block size
+    cmSetArray[i] = (mmblk[i] % block_size);																		//from main meory array, the cmSetArray is populated by doing mod division by the block size
 	}
 }
 
 void first_table(int main_memory_addresses[], int mmblkNum[], int size) {
 	std::cout << "Main Memory Address\t MM Blk#\t Cm Set#\t Cm Blk#\t hit/miss" << std::endl;
 	std::cout << "__________________________________________________________________________________" << std::endl;
+}
+
+void second_table(int numofCacheblks){
+	std::cout << "Cache blk #\t dirty bit\t valid bit\t tag\t Data" << std::endl;
+	std::cout << "_______________________________________________________________" << std::endl;
+	for (int i = 0; i < numofCacheblks; i++){
+		std::cout << i << std::endl;
+	}
 }
 
 int main() {
@@ -137,6 +150,7 @@ int main() {
 		}
 
     first_table(memory_locations, mainMemBlockNUM, size);
+		second_table(cacheBlock);
 
     std::cout << "\nContinue? (y = yes, n = no): ";
     std::cin >> user_loop_exit;
