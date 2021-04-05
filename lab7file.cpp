@@ -106,9 +106,18 @@ void mmBlockANDcmSetNum(int mainMemAddress[], int mmblk[], int cmSetArray[], int
 	}
 }
 
-void first_table(int main_memory_addresses[], int mmblkNum[], int size) {
+void first_table(int main_memory_addresses[], int mmblkNum[], int cmsetNum[], int size) {
 	std::cout << "Main Memory Address\t MM Blk#\t Cm Set#\t Cm Blk#\t hit/miss" << std::endl;
 	std::cout << "__________________________________________________________________________________" << std::endl;
+	for (int i =0; i < size; i++){
+		std::cout << "\t  ";
+		printElement(main_memory_addresses[i], numWidth);
+		std::cout << "\t    ";
+		printElement(mmblkNum[i], numWidth);
+		std::cout << "\t    ";
+		printElement(cmsetNum[i], numWidth);
+		std::cout << std::endl;
+	}
 }
 
 void second_table(int numofCacheblks){
