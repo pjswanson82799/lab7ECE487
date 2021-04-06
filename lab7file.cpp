@@ -1,3 +1,7 @@
+//Palmer Swanson
+//ECE 487 Lab 7
+//Memory nSimulator
+
 #include <iostream>			//basic IO
 #include <math.h>       /* log2 */
 #include <string>       //for strings
@@ -142,6 +146,7 @@ void actual_hit_rate(){
 }
 
 void second_table(int numofCacheblks){
+  std::cout <<"\nFinal “status” of the cache:" << std::endl;
 	std::cout << "Cache blk #\t dirty bit\t valid bit\t tag\t Data" << std::endl;
 	std::cout << "_______________________________________________________________" << std::endl;
 	for (int i = 0; i < numofCacheblks; i++){
@@ -192,14 +197,17 @@ int main() {
 
     mmBlockANDcmSetNum(memory_locations, mainMemBlockNUM, CacheMemSetNUM, blocksize, size);
 
+    //debug delete this later
     for (int i =0; i < sizeof(mainMemBlockNUM)/sizeof(mainMemBlockNUM[0]); i++){
 			std::cout <<  memory_locations[i]<< '\t' << mainMemBlockNUM[i] << '\t' << CacheMemSetNUM[i] << std::endl;
 		}
 
+    //table info
     first_table(memory_locations, mainMemBlockNUM, CacheMemSetNUM, size);
     optimal_hit_rate(mainMemBlockNUM, size);
 		second_table(cacheBlock);
 
+    //exit loop condition at the end of the program
     std::cout << "\nContinue? (y = yes, n = no): ";
     std::cin >> user_loop_exit;
     if (user_loop_exit == 'n') {
