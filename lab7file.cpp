@@ -40,10 +40,11 @@ void user_input( int &mainMem, int &cache, int &BlockSize, int &associativity, c
 //This function takes the values that had data read into them in the user_input function and performs various calculations with them.  Reading in the size of the various memory
 //main memory, cache, block, and degree of associiativty, the number of addresslines, number of offset bits, number of index bits, number of tag bits, and number of total bits total bits needed
 //are calculated.
-void values_required(int sizeofMainMem, int sizeofCache, int BlockSize, int degreeAssociative, int &addressLinesNeeded, int &bitsforOffset, int &bitsforINDEX, int &bitsForTag, int &totalBits){
+void values_required(int sizeofMainMem, int sizeofCache, int BlockSize, int degreeAssociative, int &addressLinesNeeded, int &blocksinCache, int &bitsforOffset, int &bitsforINDEX, int &bitsForTag, int &totalBits){
   int blocksPerSet = 0;
   int numSets = 0;
   addressLinesNeeded = (int) log2(sizeofMainMem);           //basic formula given in class
+  blocksinCache = sizeofCache/BlockSize;
   bitsforOffset = (int) log2(BlockSize);
   blocksPerSet = (BlockSize * degreeAssociative);
   //std::cout << blocksPerSet << std::endl;
@@ -120,6 +121,10 @@ void first_table(int main_memory_addresses[], int mmblkNum[], int cmsetNum[], in
 	}
 }
 
+void optimal_hit_rate(int main_memory_addresses[]){
+
+}
+
 void second_table(int numofCacheblks){
 	std::cout << "Cache blk #\t dirty bit\t valid bit\t tag\t Data" << std::endl;
 	std::cout << "_______________________________________________________________" << std::endl;
@@ -145,6 +150,7 @@ int main() {
 
 		//variables that will hold data passed to it by reference
     int tot_address_lines_needed = 0;
+    int cacheBlock = 0;
     int bitsneededForOffset = 0;
     int bits_for_index = 0;
     int bitsForTag = 0;
@@ -155,7 +161,7 @@ int main() {
 
 		//get user input from keyboard and save into declared variables
     user_input(mainMemoryByteSize, cacheSizeBytes, blocksize, associativityDegree, replacementPolicy, inputFileName);
-    values_required(mainMemoryByteSize, cacheSizeBytes, blocksize, associativityDegree, tot_address_lines_needed, bitsneededForOffset, bits_for_index, bitsForTag, totalBitsNeeded);
+    values_required(mainMemoryByteSize, cacheSizeBytes, blocksize, associativityDegree, tot_address_lines_needed, cacheBlock, bitsneededForOffset, bits_for_index, bitsForTag, totalBitsNeeded);
 
     numMemRef_fromInput = mem_references_from_file(inputFileName);
 
@@ -174,7 +180,7 @@ int main() {
 			std::cout <<  memory_locations[i]<< '\t' << mainMemBlockNUM[i] << '\t' << CacheMemSetNUM[i] << std::endl;
 		}
 
-    first_table(memory_locations, mainMemBlockNUM, size);
+    first_table(memory_locations, mainMemBlockNUM, CacheMemSetNUM, size);
 		second_table(cacheBlock);
 
     std::cout << "\nContinue? (y = yes, n = no): ";
