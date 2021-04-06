@@ -121,8 +121,24 @@ void first_table(int main_memory_addresses[], int mmblkNum[], int cmsetNum[], in
 	}
 }
 
-void optimal_hit_rate(int main_memory_addresses[]){
+void optimal_hit_rate(int main_memory_addresses[], int sizeOfArray){
+  int i, j, count = 0;
+  float percentage = 0;
+  for(i = 0; i < sizeOfArray; i++){
+    for (j = i+1; j < sizeOfArray; j++){
+      if(main_memory_addresses[i] == main_memory_addresses[j]){
+        count++;
+        break;
+      }
+    }
+  }
+  percentage = (((float) count/sizeOfArray)*100);
+  std::cout<<"\nHighest possible hit rate = " <<count << "/" << sizeOfArray << " = " << percentage << "%" << std::endl;
+}
 
+void actual_hit_rate(){
+  int i, j, count = 0;
+  float percentage = 0;
 }
 
 void second_table(int numofCacheblks){
@@ -181,6 +197,7 @@ int main() {
 		}
 
     first_table(memory_locations, mainMemBlockNUM, CacheMemSetNUM, size);
+    optimal_hit_rate(mainMemBlockNUM, size);
 		second_table(cacheBlock);
 
     std::cout << "\nContinue? (y = yes, n = no): ";
