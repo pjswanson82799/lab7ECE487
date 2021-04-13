@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include <fstream>    //for reading files
+#include <utility>
 
 struct user_struct {
     int bytesOfMainMemory = 0;
@@ -31,7 +32,7 @@ struct hitormisstable {
     std::vector<int> mainMemAddress;
     std::vector<int> mainMemBlock;
     std::vector<int> cacheMemSet;
-    std::string cacheMemBlock = "";
+    std::vector<std::pair<int, int>> cmpair;
 };
 
 struct optimal {
@@ -148,6 +149,15 @@ void meat_of_input_file(std::string input_file, std::vector<char>& read_write, s
     cmset.pop_back();
 }
 
+void range_cmblk(std::vector<int> cmset, std::vector<std::pair<int, int>>& p, int associativity){
+  int temp;
+  int temp1;
+  for(int i = 0; i < cmset.size(); i++){
+    temp = cmset[i]*associativity;
+    temp1 = (cmset[i]*associativity) + (associativity - 1);
+    p.push_back(std::make_pair(temp, temp1));
+  }
+}
 //calculates final size of Cache.  INput is the original size of cache, number of CM blocks, and number of tag bits.
 int finalsizeofCache(int origianlCMsize, int numOfBlocks, int numberOfTagBits) {
     int temp = (1 + 1 + numberOfTagBits);                       //int for value of the sum of compiler directives and tag bits
@@ -165,21 +175,6 @@ std::string toBinary(int n, int numofTagbits) {
         n /= 2;
     }
     return r;                                         //return the string of the bianry number
-}
-
-// pull the specific tag from the memory_location using arithmetic.Populates an empty array of strings with a tag
-void gettag(int memory_location[], std::string tag_array[], int numbOffset, int indexBits, int numbTag, int size) {
-    int temp = numbOffset + indexBits;
-    int temp1 = pow(2, temp);
-    int temp2;
-    std::string temp3;
-    for (int i = 0; i < size; i++) {
-        temp2 = memory_location[i] / temp1;
-        temp3 = toBinary(temp2, numbTag);
-        //std::cout << toBinary(temp2, numbTag) << std::endl;
-        tag_array[i] = temp3;
-        std::cout << tag_array[i] << std::endl;
-    }
 }
 
 void optimal_hit_rate(std::vector<int> mainmemblock, int& hits, int& total, float& percentage) {
@@ -240,6 +235,12 @@ int main(){
         optimal_hit_rate(readingFile.mainMemBlock, theoreticalhitrate.hits, theoreticalhitrate.total, theoreticalhitrate.percentage);
 
         //std::cout << theoreticalhitrate.hits << std::endl;
+
+        range_cmblk(readingFile.cacheMemSet, readingFile.cmpair, input.degreesetAssociativity);
+
+        //for(int i = 0; i < readingFile.cmpair.size(); i++){
+          //std::cout << readingFile.cmpair[i].first << ", " << readingFile.cmpair[i].second << std::endl;
+        //}
 
         std::cout << "\nContinue? (y = yes, n = no): ";
         std::cin >> user_loop_exit;
