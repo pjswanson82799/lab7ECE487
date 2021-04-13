@@ -8,6 +8,7 @@
 #include <vector>
 #include <fstream>    //for reading files
 #include <utility>
+#include <algorithm>
 
 struct user_struct {
     int bytesOfMainMemory = 0;
@@ -202,6 +203,27 @@ void simulator_output(int requiredAddressLines, int offsetbits, int indexbits, i
     std::cout << "Total cache size required = " << sizeCM << " bytes" << std::endl;
 }
 
+//formats the first table of the simulation output
+void firsttable(std::vector<int> address, std::vector<int> block, std::vector<int> cmset, std::vector<std::pair<int, int>> range, float optimal){
+  std::cout << "\nMain Memory Address\t MM Blk#\t Cm Set#\t Cm Blk#\t hit/miss" << std::endl;
+  std::cout << "----------------------------------------------------------------------------------" << std::endl;
+  for (int i =0; i < address.size(); i++){
+    std::cout << "\t  " <<address[i] << "\t\t    " << block[i] << "\t\t    " << cmset[i] << "\t\t   " << range[i].first << "-" << range[i].second << std::endl;
+}
+  std::cout << "\nHighest possible hit rate = " << optimal << "%" << std::endl;
+}
+
+/*
+void cache(std::vector<int> mmblk, std::vector<int> cmset, std::vector<std::pair<int,int>> cmblk, bool valid, std::string fill){
+  for(int i = 0; i < cmset.size(); i++){
+    if (cmset[i] >= cmblk[i].first && cmset[i] <= cmblk[i].second && valid[i] == 0){
+      valid[i] = 1;
+      fill[i] = mmblk[i];
+    }
+  }
+}
+*/
+
 int main(){
     user_struct input;
     cacheBlock usercache;
@@ -237,6 +259,7 @@ int main(){
         //std::cout << theoreticalhitrate.hits << std::endl;
 
         range_cmblk(readingFile.cacheMemSet, readingFile.cmpair, input.degreesetAssociativity);
+        firsttable(readingFile.mainMemAddress, readingFile.mainMemBlock, readingFile.cacheMemSet, readingFile.cmpair, theoreticalhitrate.percentage);
 
         //for(int i = 0; i < readingFile.cmpair.size(); i++){
           //std::cout << readingFile.cmpair[i].first << ", " << readingFile.cmpair[i].second << std::endl;
