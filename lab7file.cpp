@@ -8,7 +8,7 @@
 #include <vector>
 #include <fstream>    //for reading files
 #include <utility>
-#include <algorithm>
+//#include <algorithm>
 
 struct user_struct {
     int bytesOfMainMemory = 0;
@@ -19,58 +19,35 @@ struct user_struct {
     std::string fileName = "";
 };
 
-struct cacheBlock {
-    int numberofCacheBlocks = 0;
-    int totalbits = 0;
-    int tagbits = 0;
-    int indexbits = 0;
-    int offsetbits = 0;
-    int finalsize = 0;
-};
-
-struct hitormisstable {
-    std::vector<char> readwrite;
-    std::vector<int> mainMemAddress;
-    std::vector<int> mainMemBlock;
-    std::vector<int> cacheMemSet;
-    std::vector<std::pair<int, int>> cmpair;
-};
-
-struct optimal {
-    int hits = 0;
-    int total = 0;
-    float percentage = 0.0;
-};
-
 struct CacheBlocks {
     bool dirtybit = 0;
     bool validbit = 0;
-    std::string tag = "";
-    std::string data = "";
+    std::string tag = "?";
+    std::string data = "?";
 };
 
 //queries the user to enter an int.  This int will be the size of the main memory in bytes
 int main_memory_size_query() {
-    int size1;                                                                  //init integer
+    int size;                                                                  //init integer
     std::cout << "Enter the size of main memory in bytes: ";                    //std::cout to get user input
-    std::cin >> size1;                                                          //read in inputted value
-    return size1;                                                               //return integer
+    std::cin >> size;                                                          //read in inputted value
+    return size;                                                               //return integer
 }
 
 //queries the user to enter an int.  This int will be the size of the cache for this iteration of the Simulator
 int cache_memory_query() {
-    int size2;                                                                  //init integer
+    int size;                                                                  //init integer
     std::cout << "Enter the size of the cache in bytes: ";                     //std::cout to get user input
-    std::cin >> size2;                                                         //read in inputted value
-    return size2;                                                              //return integer
+    std::cin >> size;                                                         //read in inputted value
+    return size;                                                              //return integer
 }
 
 //queries the user to enter an int.  This int will be the size of the cache block for this iteration of the Simulator
 int block_size_query() {
-    int size3;                                                                //init integer
+    int size;                                                                //init integer
     std::cout << "Enter the cache block/line size: ";                         //std::cout to get user input
-    std::cin >> size3;                                                        //read in inputted value
-    return size3;                                                             //return integer
+    std::cin >> size;                                                        //read in inputted value
+    return size;                                                             //return integer
 }
 
 //queries the user to enter an int.  This int will be the n-wway set associative mapping for this iteration of the Simulator
@@ -127,38 +104,42 @@ int numberofCMblks(int sizeofCache, int sizeofBlock) {
     return temp;                                                                //return this temp variable
 }
 
+//gets the two columns from the data file
 void meat_of_input_file(std::string input_file, std::vector<char>& read_write, std::vector<int>& memorylocations, std::vector<int>& mmblock, std::vector<int>& cmset, int cachesize, int blocksize, int nwayassociativity) {
     int temp = (cachesize/ blocksize);
     int temp1 = (temp/nwayassociativity);
-    int number = 0;
-    std::string line1;
+    int number = 0;                                       //declare a variable to keep track of the elements in the vectors
+    std::string line1;                                    //string for the line to be read from file
     std::string word;
     std::string value;
     std::ifstream stream(input_file.c_str());
     stream.ignore(1, '\n');                           //to ignore the first line
     while (getline(stream, line1)) {
-        stream >> word >> value;
-        read_write.push_back(word[0]);
-        number = stoi(value);
-        memorylocations.push_back(number);
+        stream >> word >> value;                      //scan word and value from the line
+        read_write.push_back(word[0]);                //add word to read_write vector
+        number = stoi(value);                         //string to integer the memory value
+        memorylocations.push_back(number);            //pushback the vector of memory locations
         mmblock.push_back(number / blocksize);
         cmset.push_back((number/blocksize) % temp1);
     }
+    //These next four lines were added because without them, the last element of the vectors was repeated.
     read_write.pop_back();
     memorylocations.pop_back();
     mmblock.pop_back();
     cmset.pop_back();
 }
 
+//Get the range of the cache memory blocks
 void range_cmblk(std::vector<int> cmset, std::vector<std::pair<int, int>>& p, int associativity){
   int temp;
   int temp1;
   for(int i = 0; i < cmset.size(); i++){
-    temp = cmset[i]*associativity;
-    temp1 = (cmset[i]*associativity) + (associativity - 1);
-    p.push_back(std::make_pair(temp, temp1));
+    temp = cmset[i]*associativity;                                            //calculating bottom range of possible block numbers
+    temp1 = (cmset[i]*associativity) + (associativity - 1);                   //calculating top range of possible block numbers
+    p.push_back(std::make_pair(temp, temp1));                                 //add the two values to the vector
   }
 }
+
 //calculates final size of Cache.  INput is the original size of cache, number of CM blocks, and number of tag bits.
 int finalsizeofCache(int origianlCMsize, int numOfBlocks, int numberOfTagBits) {
     int temp = (1 + 1 + numberOfTagBits);                       //int for value of the sum of compiler directives and tag bits
@@ -178,6 +159,32 @@ std::string toBinary(int n, int numofTagbits) {
     return r;                                         //return the string of the bianry number
 }
 
+std::string tag(int memorylocation, int numOffset, int indexbits, int numtagbits){
+  int temp = numOffset + indexbits;
+  int temp1 = pow(2, temp);
+  int temp2 = memorylocation/temp1;;
+  std::string temp3 = toBinary(temp2, numtagbits);
+  return temp3;
+}
+
+void xs(int numtag){
+  for (int i = 0; i < numtag; i++){
+    std::cout << "X";
+  }
+}
+
+//formats the data field for the second table to include mm blk #
+std::string Data(int block){
+  std::string temp1;
+  std::string temp2;
+  std::string temp3;
+  temp1 = "mm blk # ";
+  temp2 = std::to_string(block);
+  temp3 = temp1 + temp2;
+  return temp3;
+}
+
+//Calculate the number of hits and total memory locations.  Also determine the hit rate as a percentage
 void optimal_hit_rate(std::vector<int> mainmemblock, int& hits, int& total, float& percentage) {
     int i, j, count = 0;
     for (i = 0; i < mainmemblock.size(); i++) {
@@ -193,6 +200,17 @@ void optimal_hit_rate(std::vector<int> mainmemblock, int& hits, int& total, floa
     percentage = (((float)count / mainmemblock.size()) * 100);
 }
 
+
+void pop_cache(CacheBlocks CacheMemory[], std::vector<char> rw, std::vector<int> mmadd, std::vector<int> mmblk, std::vector<int> cmsetnum, std::vector<std::pair<int, int>> cmpair, int offset, int index, int tagbits){
+  for (int i = 0; i < cmsetnum.size(); i++){
+    if (cmsetnum[i] == cmpair[i].first){
+      CacheMemory[i].validbit = 1;
+      CacheMemory[i].tag = tag(mmadd[i], offset, index, tagbits);
+      CacheMemory[i].data = Data(mmblk[i]);
+    }
+  }
+}
+
 // formats simulation output required in lab sheet.
 void simulator_output(int requiredAddressLines, int offsetbits, int indexbits, int tagbits, int sizeCM) {
     std::cout << "\nSimulator Output:" << std::endl;
@@ -204,37 +222,51 @@ void simulator_output(int requiredAddressLines, int offsetbits, int indexbits, i
 }
 
 //formats the first table of the simulation output
-void firsttable(std::vector<int> address, std::vector<int> block, std::vector<int> cmset, std::vector<std::pair<int, int>> range, float optimal){
+void firsttable(std::vector<int> address, std::vector<int> block, std::vector<int> cmset, std::vector<std::pair<int, int>> range, float optimal, int hits, int total){
   std::cout << "\nMain Memory Address\t MM Blk#\t Cm Set#\t Cm Blk#\t hit/miss" << std::endl;
   std::cout << "----------------------------------------------------------------------------------" << std::endl;
   for (int i =0; i < address.size(); i++){
     std::cout << "\t  " <<address[i] << "\t\t    " << block[i] << "\t\t    " << cmset[i] << "\t\t   " << range[i].first << "-" << range[i].second << std::endl;
 }
-  std::cout << "\nHighest possible hit rate = " << optimal << "%" << std::endl;
+  std::cout << "\nHighest possible hit rate = " << hits << "/" << total << " = "<< optimal << "%" << std::endl;
+  std::cout << "Actual hit rate = " << std::endl;
 }
 
-/*
-void cache(std::vector<int> mmblk, std::vector<int> cmset, std::vector<std::pair<int,int>> cmblk, bool valid, std::string fill){
-  for(int i = 0; i < cmset.size(); i++){
-    if (cmset[i] >= cmblk[i].first && cmset[i] <= cmblk[i].second && valid[i] == 0){
-      valid[i] = 1;
-      fill[i] = mmblk[i];
-    }
+void secondtable(int size){
+  std::cout << "\n  Cache blk #\t dirty bit\t valid bit\t Tag\t Data" << std::endl;
+  std::cout << "-----------------------------------------------------------------------------" << std::endl;
+  for(int i = 0; i <size; i++){
+    std::cout << "\t" << i << std::endl;
   }
 }
-*/
 
 int main(){
-    user_struct input;
-    cacheBlock usercache;
-    hitormisstable readingFile;
-    optimal theoreticalhitrate;
 
     char user_loop_exit;
     bool exit_loop = false;
 
     while (exit_loop == false) {
-        //user input variables.  Input into the struct declcared just inside main
+
+        user_struct input;
+
+        int totalbits;
+        int offsetbits;
+        int indexbits;
+        int tagbits;
+        int finalsize;
+        int numberofCacheBlocks;
+
+        int hits = 0;
+        int total = 0;
+        float percentage = 0.0;
+
+        std::vector<char> readwrite;
+        std::vector<int> mainMemAddress;
+        std::vector<int> mainMemBlock;
+        std::vector<int> cacheMemSet;
+        std::vector<std::pair<int, int>> cmpair;
+
+        //user input variables.  Input into the struct declcared inside main
         input.bytesOfMainMemory = main_memory_size_query();
         input.bytesOfCacheMemory = cache_memory_query();
         input.blocksize = block_size_query();
@@ -242,28 +274,37 @@ int main(){
         input.replacementpolicy = replacementPolicy_query();
         input.fileName = inputFileNameQuery();
 
-        usercache.numberofCacheBlocks = numberofCMblks(input.bytesOfCacheMemory, input.blocksize);
+        numberofCacheBlocks = numberofCMblks(input.bytesOfCacheMemory, input.blocksize);
 
-        CacheBlocks CacheMemory[usercache.numberofCacheBlocks];
+        CacheBlocks CacheMemory[numberofCacheBlocks];
 
-        usercache.totalbits = addresslines_calc(input.bytesOfMainMemory);
-        usercache.offsetbits = bitsforoffset_calc(input.blocksize);
-        usercache.indexbits = bitsforindex_calc(input.bytesOfCacheMemory, input.blocksize, input.degreesetAssociativity);
-        usercache.tagbits = bitsforTag_calc(usercache.totalbits, usercache.offsetbits, usercache.indexbits);
-        usercache.finalsize = finalsizeofCache(input.bytesOfCacheMemory, usercache.numberofCacheBlocks, usercache.tagbits);
+        totalbits = addresslines_calc(input.bytesOfMainMemory);
+        offsetbits = bitsforoffset_calc(input.blocksize);
+        indexbits = bitsforindex_calc(input.bytesOfCacheMemory, input.blocksize, input.degreesetAssociativity);
+        tagbits = bitsforTag_calc(totalbits, offsetbits, indexbits);
+        finalsize = finalsizeofCache(input.bytesOfCacheMemory, numberofCacheBlocks, tagbits);
 
-        meat_of_input_file(input.fileName, readingFile.readwrite, readingFile.mainMemAddress, readingFile.mainMemBlock, readingFile.cacheMemSet, input.bytesOfCacheMemory, input.blocksize, input.degreesetAssociativity);
-        simulator_output(usercache.totalbits, usercache.offsetbits, usercache.indexbits, usercache.tagbits, usercache.finalsize);
-        optimal_hit_rate(readingFile.mainMemBlock, theoreticalhitrate.hits, theoreticalhitrate.total, theoreticalhitrate.percentage);
+        meat_of_input_file(input.fileName, readwrite, mainMemAddress, mainMemBlock, cacheMemSet, input.bytesOfCacheMemory, input.blocksize, input.degreesetAssociativity);
+        simulator_output(totalbits, offsetbits, indexbits, tagbits, finalsize);
+        optimal_hit_rate(mainMemBlock, hits, total, percentage);
 
-        //std::cout << theoreticalhitrate.hits << std::endl;
+        range_cmblk(cacheMemSet, cmpair, input.degreesetAssociativity);
 
-        range_cmblk(readingFile.cacheMemSet, readingFile.cmpair, input.degreesetAssociativity);
-        firsttable(readingFile.mainMemAddress, readingFile.mainMemBlock, readingFile.cacheMemSet, readingFile.cmpair, theoreticalhitrate.percentage);
+        firsttable(mainMemAddress, mainMemBlock, cacheMemSet, cmpair, percentage, hits, total);
+        secondtable(numberofCacheBlocks);
 
-        //for(int i = 0; i < readingFile.cmpair.size(); i++){
-          //std::cout << readingFile.cmpair[i].first << ", " << readingFile.cmpair[i].second << std::endl;
-        //}
+        pop_cache(CacheMemory, readwrite, mainMemAddress, mainMemBlock, cacheMemSet, cmpair, offsetbits, indexbits, tagbits);
+
+        std::cout << "\n";
+        for(int i = 0; i < numberofCacheBlocks; i++){
+          std::cout << CacheMemory[i].dirtybit << "\t" << CacheMemory[i].validbit << "\t" << CacheMemory[i].tag << "\t" << CacheMemory[i].data << std::endl;
+        }
+
+        xs(tagbits);
+        std::cout << "\n";
+        //Data(mainMemBlock);
+
+        input = {};                     //reset user_struct
 
         std::cout << "\nContinue? (y = yes, n = no): ";
         std::cin >> user_loop_exit;
