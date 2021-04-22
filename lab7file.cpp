@@ -1,6 +1,8 @@
 //Palmer Swanson
 //CWID 11726494
 //ECE 487 Lab 7 Memory Simulator
+//Eat your heart out Max
+//But also thank you
 
 #include <iostream>
 #include <math.h>
@@ -157,12 +159,13 @@ int finalsizeofCache(int origianlCMsize, int numOfBlocks, int numberOfTagBits) {
 std::string toBinary(int n, int numofTagbits) {
     std::string r;
     for (int i = 0; i < numofTagbits; i++) {            //calculate the binary number consisting of numofTagBits number of bits
-        r += (n % 2 == 0 ? "0" : "1");
+        r += (n % 2 == 0 ? "0" : "1");                  //spit out string of 1 or 0
         n /= 2;
     }
     return r;                                         //return the string of the bianry number
 }
 
+//calculate tag from the memory location
 std::string tag(int memorylocation, int numOffset, int indexbits, int numtagbits){
   int temp = numOffset + indexbits;
   int temp1 = pow(2, temp);
@@ -192,16 +195,22 @@ std::string Data(int block){
 void optimal_hit_rate(std::vector<int> mainmemblock, int& hits, int& total, float& percentage) {
     int i, j, count = 0;
     for (i = 0; i < mainmemblock.size(); i++) {
-        for (j = i + 1; j < mainmemblock.size(); j++) {
+        for (j = i + 1; j < mainmemblock.size(); j++) {                         //loop through the main memory block vector and count the number of repeated instances
             if (mainmemblock[i] == mainmemblock[j]) {
-                count++;
+                count++;                                                        //increment for eeach hit
                 break;
             }
         }
     }
     hits = count;
     total = mainmemblock.size();
-    percentage = (((float)count / mainmemblock.size()) * 100);
+    percentage = (((float)count / mainmemblock.size()) * 100);                  //calculate percentage from hits and total values
+}
+
+//calculate the actual hit rate for the given memory configuration
+float actual_hit_rate(int count, int total){
+  float temp = (float) count/total;
+  return temp*100;
 }
 
 /*
@@ -219,7 +228,7 @@ void ages(CacheBlocks CacheMemory[], int numcmblks, std::vector<std::pair<int, i
 */
 
 int pop_cache(CacheBlocks CacheMemory[], std::vector<char> rw, std::vector<int> mmadd, std::vector<int> mmblk, std::vector<int> cmsetnum, std::vector<std::pair<int, int>> cmpair, int offset, int index, int tagbits, int numcmblks, char policy, int associativity){
-  //int ageofblks[numcmblks] = {0};
+  int ageofblks[numcmblks] = {0};
   int counter = 0;
   for (int i = 0; i < cmsetnum.size(); i++){
     int index_age = 0;
@@ -284,8 +293,9 @@ int pop_cache(CacheBlocks CacheMemory[], std::vector<char> rw, std::vector<int> 
           }
         }
       }
+      //FIFO replacement policy
       else if(policy == 'F'){
-        if (hit == false){
+        if (hit == false){                                                      //since we only care about the first in, we don't care if theres a hit
           for (int k = 0; k < numcmblks; k++){
             if (k >= cmpair[i].first && k <= cmpair[i].second){
               std::cout << "Updating age of k " << k << " to ";
@@ -313,21 +323,22 @@ void simulator_output(int requiredAddressLines, int offsetbits, int indexbits, i
 }
 
 //formats the first table of the simulation output
-void firsttable(std::vector<int> address, std::vector<int> block, std::vector<int> cmset, std::vector<std::pair<int, int>> range, float optimal, int hits, int total){
+void firsttable(std::vector<int> address, std::vector<int> block, std::vector<int> cmset, std::vector<std::pair<int, int>> range, float optimal, int hits, int total, int actual_hits, float actual_percent){
   std::cout << "\nMain Memory Address\t MM Blk#\t Cm Set#\t Cm Blk#\t hit/miss" << std::endl;
   std::cout << "----------------------------------------------------------------------------------" << std::endl;
   for (int i =0; i < address.size(); i++){
     std::cout << "\t  " <<address[i] << "\t\t    " << block[i] << "\t\t    " << cmset[i] << "\t\t   " << range[i].first << "-" << range[i].second << std::endl;
 }
-  std::cout << "\nHighest possible hit rate = " << hits << "/" << total << " = "<< optimal << "%" << std::endl;
-  std::cout << "Actual hit rate = " << std::endl;
+std::cout << "\nHighest possible hit rate = " << hits << "/" << total << " = "<< optimal << "%" << std::endl;
+std::cout << "Actual hit rate = " << actual_hits << "/" << total << " = " << actual_percent << "%" << std::endl;
 }
 
-void secondtable(int size){
-  std::cout << "\n  Cache blk #\t dirty bit\t valid bit\t Tag\t Data" << std::endl;
+void secondtable(CacheBlocks CacheMemory[], int size){
+  std::cout << "\n  Cache blk #\t dirty bit\t valid bit\t Tag\t\t Data" << std::endl;
   std::cout << "-----------------------------------------------------------------------------" << std::endl;
   for(int i = 0; i <size; i++){
-    std::cout << "\t" << i << std::endl;
+    std::cout << "\t" << i << "\t      " << CacheMemory[i].dirtybit << " \t      " << CacheMemory[i].validbit;
+    std::cout << "\t         " << CacheMemory[i].tag << "\t      " << CacheMemory[i].data<< std::endl;
   }
 }
 
@@ -338,6 +349,7 @@ int main(){
 
     while (exit_loop == false) {
 
+        //defining the user input struct
         user_struct input;
 
         int totalbits;
@@ -347,10 +359,14 @@ int main(){
         int finalsize;
         int numberofCacheBlocks;
 
+        //variables for best possible hit/miss ratio
         int hits = 0;
         int total = 0;
         float percentage = 0.0;
+        int act_hits = 0;
+        float actual_percentage = 0.0;
 
+        //get vectors of memory info
         std::vector<char> readwrite;
         std::vector<int> mainMemAddress;
         std::vector<int> mainMemBlock;
@@ -365,10 +381,13 @@ int main(){
         input.replacementpolicy = replacementPolicy_query();
         input.fileName = inputFileNameQuery();
 
+        //calculate the number of cache blocks
         numberofCacheBlocks = numberofCMblks(input.bytesOfCacheMemory, input.blocksize);
 
+        //initialize an array of CacheVBlock structs called CacheMemory
         CacheBlocks CacheMemory[numberofCacheBlocks];
 
+        //set variables based upon the output of various functions
         totalbits = addresslines_calc(input.bytesOfMainMemory);
         offsetbits = bitsforoffset_calc(input.blocksize);
         indexbits = bitsforindex_calc(input.bytesOfCacheMemory, input.blocksize, input.degreesetAssociativity);
@@ -381,9 +400,6 @@ int main(){
 
         range_cmblk(cacheMemSet, cmpair, input.degreesetAssociativity);
 
-        firsttable(mainMemAddress, mainMemBlock, cacheMemSet, cmpair, percentage, hits, total);
-        secondtable(numberofCacheBlocks);
-
         int temp = numberofCacheBlocks/input.degreesetAssociativity;
         for(int i = 0; i < temp; i++){
           for (int j = 0; j < input.degreesetAssociativity; j++){
@@ -395,15 +411,15 @@ int main(){
         }
 
         //ages(CacheMemory, numberofCacheBlocks, cmpair, input.degreesetAssociativity);
-        pop_cache(CacheMemory, readwrite, mainMemAddress, mainMemBlock, cacheMemSet, cmpair, offsetbits, indexbits, tagbits, numberofCacheBlocks, input.replacementpolicy, input.degreesetAssociativity);
+        act_hits = pop_cache(CacheMemory, readwrite, mainMemAddress, mainMemBlock, cacheMemSet, cmpair, offsetbits, indexbits, tagbits, numberofCacheBlocks, input.replacementpolicy, input.degreesetAssociativity);
+        actual_percentage = actual_hit_rate(act_hits, total);
 
-        std::cout << "\n";
-        for(int i = 0; i < numberofCacheBlocks; i++){
-          std::cout << CacheMemory[i].dirtybit << "\t" << CacheMemory[i].validbit << "\t" << CacheMemory[i].tag << "\t" << CacheMemory[i].data << std::endl;
-        }
+        firsttable(mainMemAddress, mainMemBlock, cacheMemSet, cmpair, percentage, hits, total, act_hits, actual_percentage);
+        secondtable(CacheMemory, numberofCacheBlocks);
 
         input = {};                     //reset user_struct
 
+        //exit loop conditions
         std::cout << "\nContinue? (y = yes, n = no): ";
         std::cin >> user_loop_exit;
         if (user_loop_exit == 'n') {
