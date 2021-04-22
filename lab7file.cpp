@@ -395,6 +395,9 @@ int main(){
         finalsize = finalsizeofCache(input.bytesOfCacheMemory, numberofCacheBlocks, tagbits);
 
         meat_of_input_file(input.fileName, readwrite, mainMemAddress, mainMemBlock, cacheMemSet, input.bytesOfCacheMemory, input.blocksize, input.degreesetAssociativity);
+
+        std::cout << mainMemAddress.size() << std::endl;
+
         simulator_output(totalbits, offsetbits, indexbits, tagbits, finalsize);
         optimal_hit_rate(mainMemBlock, hits, total, percentage);
 
