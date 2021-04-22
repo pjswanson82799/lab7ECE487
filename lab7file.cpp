@@ -8,8 +8,9 @@
 #include <vector>
 #include <fstream>    //for reading files
 #include <utility>
-//#include <algorithm>
+#include <cstring>
 
+//defining a struct for user input
 struct user_struct {
     int bytesOfMainMemory = 0;
     int bytesOfCacheMemory = 0;
@@ -19,7 +20,9 @@ struct user_struct {
     std::string fileName = "";
 };
 
+//defining a struct for the Cache
 struct CacheBlocks {
+    int age;
     bool dirtybit = 0;
     bool validbit = 0;
     std::string tag = "?";
@@ -150,6 +153,7 @@ int finalsizeofCache(int origianlCMsize, int numOfBlocks, int numberOfTagBits) {
 }
 
 //function to convert a decimal tag to binary.  Input is the decimal number n and the number of tag bits
+//Was surprised that there wasn't any built in or included function to convert to binary
 std::string toBinary(int n, int numofTagbits) {
     std::string r;
     for (int i = 0; i < numofTagbits; i++) {            //calculate the binary number consisting of numofTagBits number of bits
@@ -200,15 +204,102 @@ void optimal_hit_rate(std::vector<int> mainmemblock, int& hits, int& total, floa
     percentage = (((float)count / mainmemblock.size()) * 100);
 }
 
-
-void pop_cache(CacheBlocks CacheMemory[], std::vector<char> rw, std::vector<int> mmadd, std::vector<int> mmblk, std::vector<int> cmsetnum, std::vector<std::pair<int, int>> cmpair, int offset, int index, int tagbits){
-  for (int i = 0; i < cmsetnum.size(); i++){
-    if (cmsetnum[i] == cmpair[i].first){
-      CacheMemory[i].validbit = 1;
-      CacheMemory[i].tag = tag(mmadd[i], offset, index, tagbits);
-      CacheMemory[i].data = Data(mmblk[i]);
+/*
+void ages(CacheBlocks CacheMemory[], int numcmblks, std::vector<std::pair<int, int>> cmpair, int associativity){
+  int temp = numcmblks/associativity;
+  for(int i = 0; i < temp; i++){
+    for (int j = 0; j < associativity; j++){
+      CacheMemory[(i*associativity)+j].age = j;
     }
   }
+  for(int k = 0; k < numcmblks; k++){
+    std::cout << k << "\t" << CacheMemory[k].age << "\t";
+  }
+}
+*/
+
+int pop_cache(CacheBlocks CacheMemory[], std::vector<char> rw, std::vector<int> mmadd, std::vector<int> mmblk, std::vector<int> cmsetnum, std::vector<std::pair<int, int>> cmpair, int offset, int index, int tagbits, int numcmblks, char policy, int associativity){
+  //int ageofblks[numcmblks] = {0};
+  int counter = 0;
+  for (int i = 0; i < cmsetnum.size(); i++){
+    int index_age = 0;
+    int index_hit = 0;
+    bool hit = false;
+    for(int j = 0; j < numcmblks; j++){
+      if (j >= cmpair[i].first && j <= cmpair[i].second){
+        std::cout << "checking block " << j << " age = " << CacheMemory[j].age << std::endl;
+        if(CacheMemory[j].age == 0){
+          std::cout << "Found index of 0\t" << j << std:: endl;
+          index_age = j;
+        }
+        if(CacheMemory[j].validbit == 1 && CacheMemory[j].tag == tag(mmadd[i], offset, index, tagbits)){
+          std::cout << "HIT block " << j << std::endl;
+          index_hit = j;
+          counter++;
+          hit = true;
+          if(rw[i] == 'W'){
+            CacheMemory[j].dirtybit = 1;
+          }
+          break;
+        }
+        else if(j == cmpair[i].second){
+          std::cout << index_age << "\t" << "adding to oldest index" << std::endl;
+          CacheMemory[index_age].validbit = 1;
+          CacheMemory[index_age].tag = tag(mmadd[i], offset, index, tagbits);
+          CacheMemory[index_age].data = Data(mmblk[i]);
+          if(rw[i] == 'W'){
+            CacheMemory[index_age].dirtybit = 1;
+          }
+          else if (rw[i] == 'R'){
+            CacheMemory[index_age].dirtybit = 0;
+          }
+          break;
+        }
+      }
+    }
+      //replacement policy stuff
+      if (policy == 'L'){
+        if (hit == true){                                                   //the behavior for LRU for hits and not hits are almost identiocal
+          int previous_age = CacheMemory[index_hit].age;
+          CacheMemory[index_hit].age = (associativity-1);
+          for (int k = 0; k < numcmblks; k++){
+            if (k >= cmpair[i].first && k <= cmpair[i].second){
+              std::cout << "Updating age of k " << k << " to ";
+              if (CacheMemory[k].age > previous_age){
+                CacheMemory[k].age--;
+              }
+            }
+          }
+        }
+        else if (hit == false){
+          int previous_age = CacheMemory[index_age].age;
+          CacheMemory[index_age].age = (associativity-1);
+          for (int k = 0; k < numcmblks; k++){
+            if (k >= cmpair[i].first && k <= cmpair[i].second){
+              std::cout << "Updating age of k " << k << " to ";
+              if (CacheMemory[k].age > previous_age){
+                CacheMemory[k].age--;
+              }
+            }
+          }
+        }
+      }
+      else if(policy == 'F'){
+        if (hit == false){
+          for (int k = 0; k < numcmblks; k++){
+            if (k >= cmpair[i].first && k <= cmpair[i].second){
+              std::cout << "Updating age of k " << k << " to ";
+              CacheMemory[k].age++;
+              if (CacheMemory[k].age >= associativity){
+                CacheMemory[k].age = 0;
+              }
+              std::cout << CacheMemory[k].age << std::endl;
+            }
+          }
+        }
+      }
+    }
+  return counter;
 }
 
 // formats simulation output required in lab sheet.
@@ -293,16 +384,23 @@ int main(){
         firsttable(mainMemAddress, mainMemBlock, cacheMemSet, cmpair, percentage, hits, total);
         secondtable(numberofCacheBlocks);
 
-        pop_cache(CacheMemory, readwrite, mainMemAddress, mainMemBlock, cacheMemSet, cmpair, offsetbits, indexbits, tagbits);
+        int temp = numberofCacheBlocks/input.degreesetAssociativity;
+        for(int i = 0; i < temp; i++){
+          for (int j = 0; j < input.degreesetAssociativity; j++){
+            CacheMemory[(i*input.degreesetAssociativity)+j].age = j;
+          }
+        }
+        for(int k = 0; k < numberofCacheBlocks; k++){
+          std::cout << k << "\t" << CacheMemory[k].age << "\t";
+        }
+
+        //ages(CacheMemory, numberofCacheBlocks, cmpair, input.degreesetAssociativity);
+        pop_cache(CacheMemory, readwrite, mainMemAddress, mainMemBlock, cacheMemSet, cmpair, offsetbits, indexbits, tagbits, numberofCacheBlocks, input.replacementpolicy, input.degreesetAssociativity);
 
         std::cout << "\n";
         for(int i = 0; i < numberofCacheBlocks; i++){
           std::cout << CacheMemory[i].dirtybit << "\t" << CacheMemory[i].validbit << "\t" << CacheMemory[i].tag << "\t" << CacheMemory[i].data << std::endl;
         }
-
-        xs(tagbits);
-        std::cout << "\n";
-        //Data(mainMemBlock);
 
         input = {};                     //reset user_struct
 
